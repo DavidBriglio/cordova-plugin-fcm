@@ -38,7 +38,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "==> MyFirebaseMessagingService onMessageReceived");
 
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("wasTapped", false);
+		data.put("wasTapped", "false");
 		for (String key : remoteMessage.getData().keySet()) {
                 Object value = remoteMessage.getData().get(key);
                 Log.d(TAG, "\tKey: " + key + " Value: " + value);
@@ -60,15 +60,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendNotification(Map<String, Object> data) {
         Intent intent = new Intent(this, FCMPluginActivity.class);
-        String title = data.get("title").toString();
-        String text = data.get("text").toString();
-        String groupTitle = data.get("groupTitle").toString();
-        if(groupTitle == null || groupTitle.isEmpty()) {
-            groupTitle = "New Notifications";
-        }
-        Integer id = Integer.parseInt(data.get("notificationId").toString());
-        if(id == null) {
-            id = 5;
+
+        String title;
+        String text;
+        String groupTitle;
+        Integer id = 5;
+
+        Object titleObj = data.get("title");
+        title = (titleObj == null) ? "New Notification" : titleObj.toString();
+
+        Object textObj = data.get("text");
+        text = (textObj == null) ? "" : textObj.toString();
+
+        Object groupTitleObj = data.get("groupTitle");
+        groupTitle = (groupTitleObj == null) ? "New Notifications" : groupTitleObj.toString();
+
+        Object idObj = data.get("notificationId");
+        if(idObj != null) {
+            try{
+                id = Integer.parseInt(idObj.toString());
+            }
+            catch (java.lang.NumberFormatException e){
+                id = 5;
+            }
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -77,8 +91,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 			intent.putExtra(key, data.get(key).toString());
 		}
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_ONE_SHOT);
-
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(getResources().getIdentifier("notificationicon", "drawable", getPackageName()))
@@ -86,14 +98,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(text)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent);
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+        Boolean isMulti = false;
         StatusBarNotification[] notifications = notificationManager.getActiveNotifications();
         for(int i = 0; i < notifications.length; i++){
             if(notifications[i].getId() == id){
+                isMulti = true;
                 Notification activeNotification = notifications[i].getNotification();
                 NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
                 style.addLine(text);
@@ -120,6 +133,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
+        intent.putExtra("multipleNotifications", isMulti.toString());
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        notificationBuilder.setContentIntent(pendingIntent);
         notificationManager.notify(id, notificationBuilder.build());
     }
 }
