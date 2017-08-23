@@ -65,7 +65,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String text;
         String groupTitle;
         Integer id = 5;
-        Integer ledColour = 0xFFFFFFFF;
+        Integer ledColour = 0xFFFFFF;
 
         Object titleObj = data.get("title");
         title = (titleObj == null) ? "New Notification" : titleObj.toString();
@@ -92,7 +92,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 ledColour = Integer.parseInt(colourObj.toString(), 16);
             }
             catch (java.lang.NumberFormatException e) {
-                ledColour = 0xFFFFFFFF;
+                ledColour = 0xFFFFFF;
             }
         }
 
