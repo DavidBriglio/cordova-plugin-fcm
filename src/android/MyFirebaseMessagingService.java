@@ -1,5 +1,7 @@
 package com.gae.scaffolder.plugin;
 
+import android.service.notification.StatusBarNotification;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -15,7 +17,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 /**
- * Created by Felipe Echanique on 08/06/2016.
+ * Created by Felipe Echanique on 08/06/2016, modified by David Briglio on 22/08/2017.
  */
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -34,52 +36,118 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
         Log.d(TAG, "==> MyFirebaseMessagingService onMessageReceived");
-		
-		if( remoteMessage.getNotification() != null){
-			Log.d(TAG, "\tNotification Title: " + remoteMessage.getNotification().getTitle());
-			Log.d(TAG, "\tNotification Message: " + remoteMessage.getNotification().getBody());
-		}
-		
+
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("wasTapped", false);
+		data.put("wasTapped", "false");
 		for (String key : remoteMessage.getData().keySet()) {
                 Object value = remoteMessage.getData().get(key);
                 Log.d(TAG, "\tKey: " + key + " Value: " + value);
-				data.put(key, value);
+                if(!key.equals("wasTapped")) {
+                    data.put(key, value);
+                }
         }
-		
+
 		Log.d(TAG, "\tNotification Data: " + data.toString());
-        FCMPlugin.sendPushPayload( data );
-        //sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), remoteMessage.getData());
+        FCMPlugin.sendPushPayload(data);
+        sendNotification(data);
     }
     // [END receive_message]
 
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @param data data received from FCM message.
      */
-    private void sendNotification(String title, String messageBody, Map<String, Object> data) {
+    private void sendNotification(Map<String, Object> data) {
         Intent intent = new Intent(this, FCMPluginActivity.class);
+
+        String title;
+        String text;
+        String groupTitle;
+        Integer id = 5;
+        Integer ledColour = 0xFFFFFFFF;
+
+        Object titleObj = data.get("title");
+        title = (titleObj == null) ? "New Notification" : titleObj.toString();
+
+        Object textObj = data.get("text");
+        text = (textObj == null) ? "" : textObj.toString();
+
+        Object groupTitleObj = data.get("groupTitle");
+        groupTitle = (groupTitleObj == null) ? "New Notifications" : groupTitleObj.toString();
+
+        Object idObj = data.get("notificationId");
+        if(idObj != null) {
+            try{
+                id = Integer.parseInt(idObj.toString());
+            }
+            catch (java.lang.NumberFormatException e) {
+                id = 5;
+            }
+        }
+
+        Object colourObj = data.get("led");
+        if(colourObj != null) {
+            try {
+                ledColour = Integer.parseInt(colourObj.toString(), 16);
+            }
+            catch (java.lang.NumberFormatException e) {
+                ledColour = 0xFFFFFFFF;
+            }
+        }
+
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
 		for (String key : data.keySet()) {
 			intent.putExtra(key, data.get(key).toString());
 		}
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(getApplicationInfo().icon)
+                .setSmallIcon(getResources().getIdentifier("notificationicon", "drawable", getPackageName()))
                 .setContentTitle(title)
-                .setContentText(messageBody)
+                .setContentText(text)
                 .setAutoCancel(true)
+                .setLights(ledColour, 1000, 500)
                 .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent);
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        Boolean isMulti = false;
+        StatusBarNotification[] notifications = notificationManager.getActiveNotifications();
+        for(int i = 0; i < notifications.length; i++){
+            if(notifications[i].getId() == id){
+                isMulti = true;
+                Notification activeNotification = notifications[i].getNotification();
+                NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
+                style.addLine(text);
+
+                //Check to see if the notification is an inbox notification or a regular notification
+                CharSequence[] activeLines = activeNotification.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+                if(activeLines == null || activeLines.length == 0) {
+                    style.addLine(activeNotification.extras.getString(Notification.EXTRA_TEXT));
+                }
+                else {
+                    for(int j = 0; j < activeLines.length; j++){
+                        if(j > 2){
+                            style.addLine("...");
+                            break;
+                        }
+                        style.addLine(activeLines[j]);
+                    }
+                }
+
+                notificationBuilder.setContentTitle(groupTitle)
+                    .setStyle(style);
+
+                break;
+            }
+        }
+
+        intent.putExtra("multipleNotifications", isMulti.toString());
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        notificationBuilder.setContentIntent(pendingIntent);
+        notificationManager.notify(id, notificationBuilder.build());
     }
 }
