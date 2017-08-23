@@ -65,6 +65,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String text;
         String groupTitle;
         Integer id = 5;
+        Integer ledColour = 0xFFFFFFFF;
 
         Object titleObj = data.get("title");
         title = (titleObj == null) ? "New Notification" : titleObj.toString();
@@ -80,8 +81,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             try{
                 id = Integer.parseInt(idObj.toString());
             }
-            catch (java.lang.NumberFormatException e){
+            catch (java.lang.NumberFormatException e) {
                 id = 5;
+            }
+        }
+
+        Object colourObj = data.get("led");
+        if(colourObj != null) {
+            try {
+                ledColour = Integer.parseInt(colourObj.toString(), 16);
+            }
+            catch (java.lang.NumberFormatException e) {
+                ledColour = 0xFFFFFFFF;
             }
         }
 
@@ -97,6 +108,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentTitle(title)
                 .setContentText(text)
                 .setAutoCancel(true)
+                .setLights(ledColour, 1000, 500)
                 .setSound(defaultSoundUri)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
