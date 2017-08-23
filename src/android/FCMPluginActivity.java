@@ -18,27 +18,29 @@ public class FCMPluginActivity extends Activity {
     private static String TAG = "FCMPlugin";
 
     /*
-     * this activity will be started if the user touches a notification that we own. 
+     * this activity will be started if the user touches a notification that we own.
      * We send it's data off to the push plugin for processing.
-     * If needed, we boot up the main activity to kickstart the application. 
+     * If needed, we boot up the main activity to kickstart the application.
      * @see android.app.Activity#onCreate(android.os.Bundle)
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		Log.d(TAG, "==> FCMPluginActivity onCreate");
-		
+
 		Map<String, Object> data = new HashMap<String, Object>();
         if (getIntent().getExtras() != null) {
 			Log.d(TAG, "==> USER TAPPED NOTFICATION");
-			data.put("wasTapped", true);
+			data.put("wasTapped", "true");
 			for (String key : getIntent().getExtras().keySet()) {
                 String value = getIntent().getExtras().getString(key);
                 Log.d(TAG, "\tKey: " + key + " Value: " + value);
-				data.put(key, value);
+                if(!key.equals("wasTapped")) {
+                    data.put(key, value);
+                }
             }
         }
-		
+
 		FCMPlugin.sendPushPayload(data);
 
         finish();
@@ -59,13 +61,13 @@ public class FCMPluginActivity extends Activity {
         final NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
     }
-	
+
 	@Override
 	public void onStart() {
 		super.onStart();
 		Log.d(TAG, "==> FCMPluginActivity onStart");
 	}
-	
+
 	@Override
 	public void onStop() {
 		super.onStop();
