@@ -12,6 +12,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Random;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -146,7 +147,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         intent.putExtra("multipleNotifications", isMulti.toString());
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, new Random().nextInt(), intent, PendingIntent.FLAG_CANCEL_CURRENT);
         notificationBuilder.setContentIntent(pendingIntent);
         notificationManager.notify(id, notificationBuilder.build());
     }
