@@ -15,6 +15,9 @@ import android.os.Bundle;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import android.app.NotificationManager;
+import android.content.Context;
+
 import java.util.Map;
 
 public class FCMPlugin extends CordovaPlugin {
@@ -96,6 +99,10 @@ public class FCMPlugin extends CordovaPlugin {
 						}
 					}
 				});
+			}
+			else if (action.equals("cancelNotification")) {
+				NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+				notificationManager.cancel("com.fcm-codova", args.getInt(0));
 			}
 			else{
 				callbackContext.error("Method not found");

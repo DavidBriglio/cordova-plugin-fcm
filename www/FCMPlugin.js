@@ -42,6 +42,10 @@ FCMPlugin.prototype.onTokenRefreshReceived = function(token){
 	console.log(token)
 };
 
+FCMPlugin.prototype.cancelNotification = function(id) {
+	exec(function(){}, function(){}, "FCMPlugin", "cancelNotification", [id]);
+};
+
 // FIRE READY //
 exec(function(result){ console.log("FCMPlugin Ready OK"); }, function(result){ console.log("FCMPlugin Ready ERROR"); }, "FCMPlugin",'ready',[]);
 
