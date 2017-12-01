@@ -169,6 +169,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         intent.putExtra("multipleNotifications", isMulti.toString());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, new Random().nextInt(), intent, PendingIntent.FLAG_CANCEL_CURRENT);
         notificationBuilder.setContentIntent(pendingIntent);
-        notificationManager.notify("com.fcm-cordova",id, notificationBuilder.build());
+        notificationManager.notify("com.fcm-cordova", id, notificationBuilder.build());
     }
 }

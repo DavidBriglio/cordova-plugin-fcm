@@ -103,7 +103,7 @@ public class FCMPlugin extends CordovaPlugin {
 			}
 			else if (action.equals("cancelNotification")) {
 				NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-				notificationManager.cancel("com.fcm-codova", args.getInt(0));
+				notificationManager.cancel("com.fcm-cordova", args.getInt(0));
 			}
 			else{
 				callbackContext.error("Method not found");
