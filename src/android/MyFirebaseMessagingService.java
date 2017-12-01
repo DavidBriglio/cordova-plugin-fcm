@@ -1,5 +1,7 @@
 package com.gae.scaffolder.plugin;
 
+import android.app.NotificationChannel;
+import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -18,11 +20,29 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 /**
- * Created by Felipe Echanique on 08/06/2016, modified by David Briglio on 22/08/2017.
+ * Created by Felipe Echanique on 08/06/2016, modified by David Briglio on 01/12/2017.
  */
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FCMPlugin";
+    
+    /**
+     * Called to setup notification channel for android API >= 26.
+     * @param context Context to get the notification manager from.
+     */
+    public static void initChannel(Context context) {
+        // Do not create channel for lower android versions
+        if(Build.VERSION.SDK_INT < 26) {
+            return;
+        }
+        
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = new NotificationChannel("default", "FCM Plugin Default", NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription("FCM Plugin Notifications");
+        if(manager != null) {
+            manager.createNotificationChannel(channel);
+        }
+    }
 
     /**
      * Called when message is received.
@@ -104,7 +124,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 		}
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "default")
                 .setSmallIcon(getResources().getIdentifier("notificationicon", "drawable", getPackageName()))
                 .setContentTitle(title)
                 .setContentText(text)
@@ -149,6 +169,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         intent.putExtra("multipleNotifications", isMulti.toString());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, new Random().nextInt(), intent, PendingIntent.FLAG_CANCEL_CURRENT);
         notificationBuilder.setContentIntent(pendingIntent);
-        notificationManager.notify("com.fcm-codova",id, notificationBuilder.build());
+        notificationManager.notify("com.fcm-cordova",id, notificationBuilder.build());
     }
 }

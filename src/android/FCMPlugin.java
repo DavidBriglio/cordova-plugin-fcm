@@ -38,6 +38,7 @@ public class FCMPlugin extends CordovaPlugin {
 		Log.d(TAG, "==> FCMPlugin initialize");
 		FirebaseMessaging.getInstance().subscribeToTopic("android");
 		FirebaseMessaging.getInstance().subscribeToTopic("all");
+		MyFirebaseMessagingService.initChannel(webView.getContext());
 	}
 
 	public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
