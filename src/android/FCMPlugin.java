@@ -15,6 +15,9 @@ import android.os.Bundle;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import android.app.NotificationManager;
+import android.content.Context;
+
 import java.util.Map;
 
 public class FCMPlugin extends CordovaPlugin {
@@ -35,6 +38,7 @@ public class FCMPlugin extends CordovaPlugin {
 		Log.d(TAG, "==> FCMPlugin initialize");
 		FirebaseMessaging.getInstance().subscribeToTopic("android");
 		FirebaseMessaging.getInstance().subscribeToTopic("all");
+		MyFirebaseMessagingService.initChannel(webView.getContext());
 	}
 
 	public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -96,6 +100,10 @@ public class FCMPlugin extends CordovaPlugin {
 						}
 					}
 				});
+			}
+			else if (action.equals("cancelNotification")) {
+				NotificationManager notificationManager = (NotificationManager) cordova.getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+				notificationManager.cancel("com.fcm-cordova", args.getInt(0));
 			}
 			else{
 				callbackContext.error("Method not found");
