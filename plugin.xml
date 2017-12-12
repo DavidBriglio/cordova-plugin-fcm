@@ -40,7 +40,7 @@
 	
     <!-- ANDROID CONFIGURATION -->
     <platform name="android">
-		<config-file target="AndroidManifest.xml" parent="/manifest/application">
+		<config-file target="app/src/main/AndroidManifest.xml" parent="/manifest/application">
 			<activity android:exported="true" android:name="com.gae.scaffolder.plugin.FCMPluginActivity" android:launchMode="singleTop">
 				<intent-filter>   
 					<action android:name="FCM_PLUGIN_ACTIVITY" />  
@@ -58,7 +58,7 @@
 				</intent-filter>
 			</service>
 		</config-file>
-		<config-file target="res/xml/config.xml" parent="/*">
+		<config-file target="app/src/main/res/xml/config.xml" parent="/*">
 			<feature name="FCMPlugin" >
 					<param name="android-package" value="com.gae.scaffolder.plugin.FCMPlugin"/>
 					<param name="onload" value="true" />
